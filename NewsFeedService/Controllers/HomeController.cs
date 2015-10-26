@@ -10,7 +10,6 @@ namespace NewsFeedService.Controllers
     {
         public ActionResult Index()
         {
-
             return View();
         }
     }
