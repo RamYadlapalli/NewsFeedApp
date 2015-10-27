@@ -95,6 +95,8 @@ namespace NewsFeedService.Controllers
                 using (ClientContext clientContext = Authenticate(SpoSiteUrl, credentials))
                 {
                     Web web = clientContext.Web;
+
+                    //Feed options
                     SocialFeedManager feedManager = new SocialFeedManager(clientContext);
                     SocialFeedOptions feedOptions = new SocialFeedOptions();
                     feedOptions.MaxThreadCount = 10;
