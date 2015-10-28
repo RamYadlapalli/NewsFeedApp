@@ -30,8 +30,17 @@ namespace NewsFeedService.Controllers
         public List<PostItem> Replies { get; set; }
     }
 
+    public class Feed
+    {
+        public IEnumerable<PostItem> Posts { get; set; }
+        public int PostCount { get; set; }
+        public SocialFeedSortOrder SortOrder { get; set; }
+    }
+
     public class SPDataController : ApiController
     {
+        public string SpoSiteUrl = "https://newsfeed.sharepoint.com";
+
         private ClientContext Authenticate(string siteUrl, Creds credentials)
         {
             string SpoSiteUrl = "https://newsfeed.sharepoint.com";
@@ -85,11 +94,32 @@ namespace NewsFeedService.Controllers
             return replies;
         }
 
-        // GET api/spdata
-        public IEnumerable<PostItem> Get([FromUri]Creds credentials)
+        private Feed GetPersonalFeed(ClientContext clientContext, SocialFeedOptions feedOptions)
         {
-            string SpoSiteUrl = "https://newsfeed.sharepoint.com";
+            SocialFeedManager feedManager = new SocialFeedManager(clientContext);
+            ClientResult<SocialFeed> socialFeed = null;
+            socialFeed = feedManager.GetFeed(SocialFeedType.Personal, feedOptions);
+            clientContext.ExecuteQuery();
+
             List<PostItem> postDictionary = new List<PostItem>();
+            foreach (SocialThread thread in socialFeed.Value.Threads)
+            {
+                PostItem postMsg = GetPost(thread);
+                postDictionary.Add(postMsg);
+            }
+
+            return new Feed()
+            {
+                Posts = postDictionary,
+                PostCount = postDictionary.Count,
+                SortOrder = feedOptions.SortOrder
+            };
+        }
+
+        // GET api/spdata
+        public Feed Get([FromUri]Creds credentials)
+        {
+            Feed feed = new Feed();
             try
             {
                 using (ClientContext clientContext = Authenticate(SpoSiteUrl, credentials))
@@ -97,20 +127,11 @@ namespace NewsFeedService.Controllers
                     Web web = clientContext.Web;
 
                     //Feed options
-                    SocialFeedManager feedManager = new SocialFeedManager(clientContext);
                     SocialFeedOptions feedOptions = new SocialFeedOptions();
                     feedOptions.MaxThreadCount = 10;
                     feedOptions.SortOrder = SocialFeedSortOrder.ByModifiedTime;
 
-                    ClientResult<SocialFeed> feed = null;
-                    feed = feedManager.GetFeed(SocialFeedType.Personal, feedOptions);
-                    clientContext.ExecuteQuery();
-
-                    foreach (SocialThread thread in feed.Value.Threads)
-                    {
-                        PostItem postMsg = GetPost(thread);
-                        postDictionary.Add(postMsg);
-                    }
+                    feed = GetPersonalFeed(clientContext, feedOptions);
                 }
             }
             catch (Exception exception)
@@ -123,7 +144,39 @@ namespace NewsFeedService.Controllers
             finally
             {
             }
-            return postDictionary;
+            return feed;
+        }
+
+        // GET api/spdata
+        public Feed Get([FromUri]Creds credentials, DateTime lastModifiedDate)
+        {
+            Feed feed = new Feed();
+            try
+            {
+                using (ClientContext clientContext = Authenticate(SpoSiteUrl, credentials))
+                {
+                    Web web = clientContext.Web;
+
+                    //Feed options
+                    SocialFeedOptions feedOptions = new SocialFeedOptions();
+                    feedOptions.MaxThreadCount = 10;
+                    feedOptions.SortOrder = SocialFeedSortOrder.ByModifiedTime;
+                    feedOptions.OlderThan = null != lastModifiedDate ? lastModifiedDate : DateTime.Today;
+
+                    feed = GetPersonalFeed(clientContext, feedOptions);
+                }
+            }
+            catch (Exception exception)
+            {
+                /*
+                 * Log in event viewer when deployed to IIS
+                 * Log to Azure DB when deployed to Azure
+                */
+            }
+            finally
+            {
+            }
+            return feed;
         }
 
         // GET api/spdata/5
