@@ -145,6 +145,7 @@ var renderChartData = function(){
     drawZingChart();
 google.charts.setOnLoadCallback(drawChart);
 $("#highChartStartTime").text("Highcharts Before Render: "+ new Date().getTime());
+	var hct = new Date().getTime();
 console.log("Highcharts Before Render " + new Date()+" In miliseconds"+new Date().getMilliseconds());
 Highcharts.chart('highchartsContainer1', {
     chart: {
@@ -152,6 +153,7 @@ Highcharts.chart('highchartsContainer1', {
         events: {
           load: function(event){
             $("#highChartEndTime").text("Highcharts After Render: "+ new Date().getTime());
+		  $("#hcRenderTime").text("High Charts render time: "+ new Date().getTime()-hct);
                 console.log("high charts rendered @ " + new Date()+" In miliseconds"+new Date().getMilliseconds());
           }
         }
