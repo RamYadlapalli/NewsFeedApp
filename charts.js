@@ -153,7 +153,8 @@ Highcharts.chart('highchartsContainer1', {
         events: {
           load: function(event){
             $("#highChartEndTime").text("Highcharts After Render: "+ new Date().getTime());
-		  $("#hcRenderTime").text("High Charts render time: "+ new Date().getTime()-hct);
+		  var hctt = new Date().getTime()-hct;
+		  $("#hcRenderTime").text("High Charts render time: "+ hctt);
                 console.log("high charts rendered @ " + new Date()+" In miliseconds"+new Date().getMilliseconds());
           }
         }
@@ -210,9 +211,12 @@ function drawZingChart(){
   }
 };
 $("#zingChartStartTime").text("zingcharts Before Render: "+ new Date().getTime());
+	var zct = new Date().getTime();
  console.log("Zingcharts Before Render " + new Date()+" In miliseconds"+new Date().getMilliseconds());
   zingchart.bind('zingChartContainer','load',function(){
                 $("#zingChartEndTime").text("zingcharts After Render: "+ new Date().getTime());
+	  var zctt = new Date().getTime() - zct;
+	   $("#zcRenderTime").text("Zing Charts render time: "+ zctt);
                 console.log("Chart rendered @ "+ new Date()+" In miliseconds"+new Date().getMilliseconds());
                 console.log("-------------------------------------------------------------------------------------");
  });
@@ -260,10 +264,13 @@ $.each(jsonObj.data,function(i,e){
         document.getElementById('googleChartContainer'));
          console.log("GoogleCharts Before Render " + new Date()+" In miliseconds"+new Date().getMilliseconds());
          $("#googleChartStartTime").text("Google charts Before Render: "+ new Date().getTime());
+	var gct = new Date().getTime();
       google.visualization.events.addListener(chart, 'ready', function(){
         $("#googleChartEndTime").text("Google charts After Render: "+ new Date().getTime());
         console.log("Google Chart rendered @ "+ new Date()+" In miliseconds"+new Date().getMilliseconds());
         console.log("-------------------------------------------------------------------------------------");
+	      var gctt = new Date().getTime() - gct;
+	        $("#gcRenderTime").text("Google Charts render time: "+ gctt);
       });
       chart.draw(data, options);
       }
